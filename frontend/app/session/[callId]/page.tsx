@@ -29,8 +29,6 @@ export default function SessionPage() {
 
   const client = useMemo(() => {
     if (missing) return null;
-    // getOrCreateInstance avoids the "client already exists" warning when
-    // React strict-mode runs effects twice in dev.
     return StreamVideoClient.getOrCreateInstance({
       apiKey: apiKey!,
       user: { id: userId!, name: "ERGO User" },
@@ -39,42 +37,46 @@ export default function SessionPage() {
   }, [missing, apiKey, userId, token]);
 
   const [call, setCall] = useState<Call | null>(null);
+  const [joining, setJoining] = useState(false);
+  const [joined, setJoined] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!client || !callId) return;
-    const c = client.call(callType, callId);
-    setCall(c);
-    (async () => {
-      try {
-        await c.join({ create: true });
-        // Stream SDK does NOT auto-publish; we must enable explicitly so the
-        // Python agent (and the Stream call) actually receives the user's
-        // webcam + mic tracks.
-        await c.camera.enable();
-        await c.microphone.enable();
-      } catch (err) {
-        console.error("call setup failed", err);
-        const msg = err instanceof Error ? err.message : String(err);
-        if (/Permission|NotAllowed|denied/i.test(msg)) {
-          setError(
-            "Browser block สิทธิ์กล้อง/ไมค์ไว้ — กดไอคอน 🔒 ที่บาร์ที่อยู่ → Camera + Microphone → Allow → Refresh"
-          );
-        } else {
-          setError(msg);
-        }
-      }
-    })();
-    return () => {
-      c.leave().catch(() => {});
-    };
-  }, [client, callId, callType]);
-
+  // Cleanup on unmount only
   useEffect(() => {
     return () => {
+      call?.leave().catch(() => {});
       client?.disconnectUser().catch(() => {});
     };
-  }, [client]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Triggered by user click — autoplay policy + permission prompt both happen
+  // in this gesture context, so audio plays + camera/mic prompt fires.
+  async function handleJoin() {
+    if (!client || !callId || joining || joined) return;
+    setJoining(true);
+    setError(null);
+    try {
+      const c = client.call(callType, callId);
+      setCall(c);
+      await c.join({ create: true });
+      await c.camera.enable();
+      await c.microphone.enable();
+      setJoined(true);
+    } catch (err) {
+      console.error("call setup failed", err);
+      const msg = err instanceof Error ? err.message : String(err);
+      if (/Permission|NotAllowed|denied/i.test(msg)) {
+        setError(
+          "Browser ไม่อนุญาตกล้อง/ไมค์ — กดไอคอน 🔒 บนบาร์ที่อยู่ → Camera + Microphone → Allow → Refresh"
+        );
+      } else {
+        setError(msg);
+      }
+    } finally {
+      setJoining(false);
+    }
+  }
 
   if (missing) {
     return (
@@ -95,10 +97,38 @@ export default function SessionPage() {
     );
   }
 
-  if (!client || !call) {
+  if (!client) {
     return (
       <main className="flex flex-1 items-center justify-center">
         <p className="text-neutral-400">กำลังเชื่อมต่อ Stream...</p>
+      </main>
+    );
+  }
+
+  // Not joined yet — show "Join" gate so the user click satisfies
+  // browser autoplay policy and gives a clean permission prompt.
+  if (!joined || !call) {
+    return (
+      <main className="flex flex-1 items-center justify-center px-6 py-12">
+        <div className="w-full max-w-md space-y-6 text-center">
+          <h1 className="text-2xl font-semibold">พร้อมเริ่ม Session?</h1>
+          <p className="text-sm text-neutral-300">
+            ระบบจะขออนุญาตกล้องและไมโครโฟนของคุณ —
+            อนุญาตทั้งคู่เพื่อให้ผู้ช่วย AI เห็นและฟังคุณได้
+          </p>
+          <button
+            onClick={handleJoin}
+            disabled={joining}
+            className="w-full rounded-xl bg-rose-500 px-6 py-4 text-lg font-semibold text-white shadow-lg shadow-rose-500/20 transition hover:bg-rose-400 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {joining ? "กำลังเชื่อมต่อ..." : "🎥 เข้าร่วมการประเมิน"}
+          </button>
+          {error && (
+            <div className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+              ❌ {error}
+            </div>
+          )}
+        </div>
       </main>
     );
   }
@@ -109,7 +139,9 @@ export default function SessionPage() {
         <StreamTheme className="flex flex-1 flex-col">
           <header className="flex items-center justify-between px-4 py-3 text-sm text-neutral-300">
             <div>🎥 ERGO AI — In Call</div>
-            <div className="text-xs text-neutral-500">call_id: {callId.slice(0, 8)}</div>
+            <div className="text-xs text-neutral-500">
+              call_id: {callId.slice(0, 8)}
+            </div>
           </header>
 
           {error && (
