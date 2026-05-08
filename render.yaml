@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: ergo-agent
+    runtime: docker
+    plan: starter   # 512MB RAM. Upgrade to "pro" if YOLO+Realtime+Stream OOM
+    healthCheckPath: /health
+    envVars:
+      - key: STREAM_API_KEY
+        sync: false
+      - key: STREAM_API_SECRET
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENAI_REALTIME_MODEL
+        value: gpt-realtime-2025-08-28
+      - key: OPENAI_REALTIME_VOICE
+        value: marin
+      # CORS — defaults to "*" which is fine for demo. To tighten, set
+      # CORS_ALLOW_ORIGINS to a JSON list, e.g. ["https://ergo-ai.vercel.app"]

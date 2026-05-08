@@ -1,0 +1,11 @@
+[project]
+name = "ergo-ai-agent"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11"
+dependencies = [
+    "imageio-ffmpeg>=0.6.0",
+    "sounddevice>=0.5.5",
+    "streamlit>=1.57.0",
+    "vision-agents[getstream,openai,ultralytics]>=0.5.7",
+]

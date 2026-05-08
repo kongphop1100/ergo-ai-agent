@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+venv/
+env/
+
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# ROM session output (recordings, audio, JSON reports, peak frames, launch logs)
+sessions/
+longterm_logs/
+logs/
+*.log
+
+# YOLO weights — auto-downloads from ultralytics on first run
+*.pt
+*.onnx
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Streamlit local secrets (in case user adds .streamlit/)
+.streamlit/secrets.toml
+
+# Frontend (Next.js)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# uv / pip
+pip-wheel-metadata/

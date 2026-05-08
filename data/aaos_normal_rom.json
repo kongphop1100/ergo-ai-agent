@@ -1,0 +1,40 @@
+{
+  "_source": "AAOS — Joint Motion: Method of Measuring and Recording. Values are typical adult max active flexion in degrees.",
+  "shoulder_flexion": 180,
+  "shoulder_abduction": 180,
+  "elbow_flexion": 150,
+  "knee_flexion": 135,
+  "trunk_lateral_left": 35,
+  "trunk_lateral_right": 35,
+
+  "_landmark_triples_doc": "(p1, p2, p3) — angle is at p2, between vectors p2->p1 and p2->p3. Names use ultralytics/COCO keypoint identifiers.",
+  "_pose_sequence_by_location_doc": "Maps the user's reported pain_location (from AssessmentState) to an ordered list of pose body_parts to test.",
+
+  "pose_sequence_by_location": {
+    "shoulder":  ["shoulder_flexion", "shoulder_abduction", "elbow_flexion"],
+    "back":      ["shoulder_flexion", "trunk_lateral_left", "trunk_lateral_right"],
+    "knee":      ["knee_flexion"],
+    "wrist":     ["elbow_flexion"],
+    "neck":      ["shoulder_flexion"],
+    "eye_head":  ["shoulder_flexion"],
+    "other":     ["shoulder_flexion", "knee_flexion"]
+  },
+
+  "angle_triples": {
+    "shoulder_flexion":    ["RIGHT_HIP", "RIGHT_SHOULDER", "RIGHT_ELBOW"],
+    "shoulder_abduction":  ["RIGHT_HIP", "RIGHT_SHOULDER", "RIGHT_ELBOW"],
+    "elbow_flexion":       ["RIGHT_SHOULDER", "RIGHT_ELBOW", "RIGHT_WRIST"],
+    "knee_flexion":        ["RIGHT_HIP", "RIGHT_KNEE", "RIGHT_ANKLE"],
+    "trunk_lateral_left":  ["RIGHT_SHOULDER", "RIGHT_HIP", "RIGHT_KNEE"],
+    "trunk_lateral_right": ["LEFT_SHOULDER", "LEFT_HIP", "LEFT_KNEE"]
+  },
+
+  "pose_instructions_th": {
+    "shoulder_flexion":    "ยืนตรง ปล่อยแขนข้างลำตัว ลองยกแขนขวาขึ้นไปด้านหน้าช้าๆ ให้ตรงและสุดเท่าที่ไหว",
+    "shoulder_abduction":  "ยืนตรง ลองกางแขนขวาออกด้านข้าง ขนานพื้น แล้วยกขึ้นเหนือศีรษะให้สุดเท่าที่ไหว",
+    "elbow_flexion":       "ยืนตรง ปล่อยแขน แล้วงอข้อศอกพับขึ้นมาแตะไหล่ให้สุดเท่าที่ไหว",
+    "knee_flexion":        "นั่งหรือยืน ลองงอเข่าให้ส้นเท้าเข้าใกล้สะโพกให้สุดเท่าที่ไหว",
+    "trunk_lateral_left":  "ยืนตรง ปล่อยแขน แล้วเอียงตัวไปด้านซ้ายให้สุดเท่าที่ไหว ไม่ต้องบิด",
+    "trunk_lateral_right": "ยืนตรง ปล่อยแขน แล้วเอียงตัวไปด้านขวาให้สุดเท่าที่ไหว ไม่ต้องบิด"
+  }
+}
