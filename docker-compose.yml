@@ -7,6 +7,10 @@ services:
     restart: unless-stopped
     expose:
       - "8000"
+    # Bind to localhost only — Caddy reaches it via the docker network ("agent:8000"),
+    # and Tailscale Funnel reaches it via 127.0.0.1:8000. Public port 8000 stays closed.
+    ports:
+      - "127.0.0.1:8000:8000"
     environment:
       - STREAM_API_KEY=${STREAM_API_KEY}
       - STREAM_API_SECRET=${STREAM_API_SECRET}
