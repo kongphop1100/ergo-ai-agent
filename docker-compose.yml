@@ -1,0 +1,41 @@
+name: ergo
+
+services:
+  agent:
+    build: .
+    image: ergo-agent:latest
+    restart: unless-stopped
+    expose:
+      - "8000"
+    environment:
+      - STREAM_API_KEY=${STREAM_API_KEY}
+      - STREAM_API_SECRET=${STREAM_API_SECRET}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENAI_REALTIME_MODEL=${OPENAI_REALTIME_MODEL:-gpt-realtime-2025-08-28}
+      - OPENAI_REALTIME_VOICE=${OPENAI_REALTIME_VOICE:-marin}
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=2).status==200 else 1)\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - ERGO_DOMAIN=${ERGO_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - agent
+
+volumes:
+  caddy_data:
+  caddy_config:

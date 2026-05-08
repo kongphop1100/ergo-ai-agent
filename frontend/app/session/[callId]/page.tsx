@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
   CallControls,
-  SpeakerLayout,
+  PaginatedGridLayout,
   StreamCall,
   StreamTheme,
   StreamVideo,
@@ -29,7 +29,9 @@ export default function SessionPage() {
 
   const client = useMemo(() => {
     if (missing) return null;
-    return new StreamVideoClient({
+    // getOrCreateInstance avoids the "client already exists" warning when
+    // React strict-mode runs effects twice in dev.
+    return StreamVideoClient.getOrCreateInstance({
       apiKey: apiKey!,
       user: { id: userId!, name: "ERGO User" },
       token: token!,
@@ -43,10 +45,26 @@ export default function SessionPage() {
     if (!client || !callId) return;
     const c = client.call(callType, callId);
     setCall(c);
-    c.join({ create: true }).catch((err) => {
-      console.error("call.join failed", err);
-      setError(err instanceof Error ? err.message : String(err));
-    });
+    (async () => {
+      try {
+        await c.join({ create: true });
+        // Stream SDK does NOT auto-publish; we must enable explicitly so the
+        // Python agent (and the Stream call) actually receives the user's
+        // webcam + mic tracks.
+        await c.camera.enable();
+        await c.microphone.enable();
+      } catch (err) {
+        console.error("call setup failed", err);
+        const msg = err instanceof Error ? err.message : String(err);
+        if (/Permission|NotAllowed|denied/i.test(msg)) {
+          setError(
+            "Browser block สิทธิ์กล้อง/ไมค์ไว้ — กดไอคอน 🔒 ที่บาร์ที่อยู่ → Camera + Microphone → Allow → Refresh"
+          );
+        } else {
+          setError(msg);
+        }
+      }
+    })();
     return () => {
       c.leave().catch(() => {});
     };
@@ -101,7 +119,7 @@ export default function SessionPage() {
           )}
 
           <div className="flex-1 px-2 pb-2">
-            <SpeakerLayout participantsBarPosition="bottom" />
+            <PaginatedGridLayout groupSize={4} />
           </div>
 
           <div className="border-t border-neutral-800 bg-neutral-900/50 px-4 py-3">

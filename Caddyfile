@@ -1,0 +1,9 @@
+{$ERGO_DOMAIN} {
+    reverse_proxy agent:8000
+    encode gzip
+    header {
+        # CORS handled by agent app, but Caddy passes everything through.
+        # Strict transport (HTTPS only) — safe because Caddy auto-redirects 80→443.
+        Strict-Transport-Security "max-age=31536000;"
+    }
+}
