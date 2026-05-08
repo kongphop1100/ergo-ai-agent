@@ -41,14 +41,10 @@ export default function SessionPage() {
   const [joined, setJoined] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Cleanup on unmount only
-  useEffect(() => {
-    return () => {
-      call?.leave().catch(() => {});
-      client?.disconnectUser().catch(() => {});
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // No explicit cleanup: in React strict-mode dev the effect cleanup runs
+  // immediately after mount, which would call disconnectUser() and wipe the
+  // token before the user even clicks Join. The Stream client/call clean up
+  // on page unload via getOrCreateInstance + browser GC.
 
   // Triggered by user click — autoplay policy + permission prompt both happen
   // in this gesture context, so audio plays + camera/mic prompt fires.
